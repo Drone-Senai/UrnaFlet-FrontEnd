@@ -56,7 +56,7 @@ def objeto_page(page: ft.Page, votacao_id, votacao_nome):
 
 
 
-# Página inicial com botões dinâmicos
+# Página inicial com botões dinâmicos - NOMES DAS VOTAÇÕES
 def main(page: ft.Page):
     page.title = "Lista de Votações"
     page.vertical_alignment = ft.MainAxisAlignment.START
@@ -70,7 +70,7 @@ def main(page: ft.Page):
                 for votacao in votacoes:
                     botao = ft.ElevatedButton(
                         text=f"{votacao['Nome']} - {votacao['Tema']}",
-                        on_click=lambda e, v=votacao: objeto_page(page, v["ID_Votacao"], v["Nome"])
+                        on_click=lambda e, v=votacao: objeto_page(page, v["ID_Votacao"], v["Nome"]) # FUNÇÃO QUE MANDA PRA OUTRA PAGINA COM OS OBJETOS
                     )
                     botoes.append(botao)
                 page.views.append(

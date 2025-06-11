@@ -62,6 +62,27 @@ def main(page: ft.Page):
             msg.color = ft.Colors.RED
 
         page.update()
+    
+    encerrar_id = ft.TextField(label="ID da Votação para Encerrar", width=300)
+
+    def encerrar_votacao(e):
+        if not encerrar_id.value:
+            msg.value = "Digite o ID da votação que deseja encerrar."
+            msg.color = ft.Colors.RED
+            page.update()
+            return
+        try:
+            res = requests.post(f"{API_URL}/encerrarVotacao", json={"id_votacao": int(encerrar_id.value)})
+            if res.status_code == 200:
+                msg.value = f"Votação {encerrar_id.value} encerrada com sucesso!"
+                msg.color = ft.Colors.GREEN
+            else:
+                msg.value = res.json().get("detail", "Erro ao encerrar votação.")
+                msg.color = ft.Colors.RED
+        except Exception as err:
+            msg.value = f"Erro na requisição: {err}"
+            msg.color = ft.Colors.RED
+        page.update()
 
     # Layout da página
     page.add(
@@ -71,6 +92,9 @@ def main(page: ft.Page):
             botao_data,
             data_encerramento_txt,
             ft.ElevatedButton("Adicionar Votação", on_click=AddVotacao),
+            ft.Divider(),
+            encerrar_id,
+            ft.ElevatedButton("Encerrar Votação", on_click=encerrar_votacao),
             msg
         ])
     )
