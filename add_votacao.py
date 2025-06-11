@@ -4,9 +4,6 @@ from datetime import datetime, date
 
 API_URL = "http://127.0.0.1:8000/"
 
-
-
-
 def main(page: ft.Page):
     page.title = "Cadastro de Projeto"
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
@@ -52,8 +49,7 @@ def main(page: ft.Page):
                 "nome": nome.value,
                 "tema": tema.value,
                 "data_hoje": data_hoje,
-                "data_encerramento": data_info.strftime("%d/%m/%Y")  # formato ISO para JSON
-                # "data_encerramento": data_info["data"].isoformat()  # formato compatível com JSON
+                "data_encerramento": data_info.strftime("%d/%m/%Y")  
             })
             if res.status_code == 200:
                 msg.value = "Votação Adicionada com sucesso!"
