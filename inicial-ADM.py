@@ -97,8 +97,9 @@ def main(page: ft.Page):
         page.update()
         
     def voltar_para_tela_principal(e):
-        subprocess.Popen([sys.executable, "app.py"])  # Abre app.py
-        os._exit(0)
+        subprocess.Popen(["python", "app.py"])
+        page.clean()  # limpa a tela sem encerrar o processo
+
 
     def encerrar_votacao_por_tema(e):
         tema_escolhido = temas_dropdown.value
