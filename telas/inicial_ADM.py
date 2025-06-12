@@ -7,7 +7,8 @@ import os
 
 API_URL = "http://127.0.0.1:8000"
 
-def main(page: ft.Page):
+def build(page: ft.Page):
+    page.clean()
     page.title = "Gerenciar Votações"
     page.scroll = ft.ScrollMode.AUTO
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
@@ -97,9 +98,13 @@ def main(page: ft.Page):
         page.update()
         
     def voltar_para_tela_principal(e):
-        subprocess.Popen(["python", "app.py"])
-        page.clean()  # limpa a tela sem encerrar o processo
+        page.go("/login") 
 
+    def ir_para_add_objetovotacao(e):
+        page.go("/objeto-votacao")
+
+    def ir_para_cadastrar_objeto(e):
+        page.go("/objetos")
 
     def encerrar_votacao_por_tema(e):
         tema_escolhido = temas_dropdown.value
@@ -179,6 +184,21 @@ def main(page: ft.Page):
         )         
     )
 
+    btn_ver_votacoes = ft.ElevatedButton(
+        "Adicionar Objeto a Votação",
+        icon=ft.Icons.LIST_ALT,
+        bgcolor=ft.Colors.RED,
+        color=ft.Colors.WHITE,
+        on_click=ir_para_add_objetovotacao
+    )
+
+    btn_objetos = ft.ElevatedButton(
+        "Cadastrar Objeto",
+        icon=ft.Icons.ADD_BOX,
+        bgcolor=ft.Colors.RED,
+        color=ft.Colors.WHITE,
+        on_click=ir_para_cadastrar_objeto
+    )
 
     btn_voltar = ft.ElevatedButton(
         "Sair do perfil Administrador",
@@ -188,21 +208,31 @@ def main(page: ft.Page):
         on_click=voltar_para_tela_principal  # ajuste se necessário
     )
 
-    page.add(
-        ft.Column(
-            [
-                ft.Row(
-                    [esquerda, direita],
-                    spacing=10,
-                    alignment=ft.MainAxisAlignment.CENTER
-                ),
-                ft.Divider(height=20, color="transparent"),
-                btn_voltar
-            ],
-            alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER
-        )
+    return ft.View(
+        route="/",
+        controls=[
+            ft.Column(
+                [
+                    ft.Row(
+                        [esquerda, direita],
+                        spacing=10,
+                        alignment=ft.MainAxisAlignment.CENTER
+                    ),
+                    ft.Row(
+                        [btn_ver_votacoes, btn_objetos],
+                        alignment=ft.MainAxisAlignment.CENTER
+                    ),
+                    ft.Divider(height=10, color="transparent"),
+                    btn_voltar
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,
+        vertical_alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
 
-ft.app(target=main)
+
