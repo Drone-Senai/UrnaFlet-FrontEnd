@@ -74,16 +74,44 @@ def main(page: ft.Page):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
 
+    #/votacoes/1/objetos?eleitor_id=10 <--- exemplo
     def carregar_view_votacao(votacao_id: str):
-        return ft.View(
-            route=f"/votacao/{votacao_id}",
-            controls=[
-                ft.Text(f"Você está na votação ID {votacao_id}", size=24),
-                ft.ElevatedButton("Voltar", on_click=lambda e: page.go("/"))
-            ],
-            vertical_alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        botoes_objetos_possiveis = []
+        try:
+            res = requests.get(f"{API_URL}/objetos")
+            if res.status_code == 200:
+                objetos = res.json()
+                for obj in objetos:
+                    botao = ft.ElevatedButton(
+                        text=obj["nome"],
+                        on_click=lambda e, oid=obj["id"]: obj(oid) # <--- FUNÇÃO A SER CHAMADA AINDA
+                    )
+                    botoes_objetos_possiveis.append(botao)
+            else:
+                botoes_objetos_possiveis.append(ft.Text("Erro ao buscar objetos."))
+        except Exception as e:
+            botoes_objetos_possiveis.append(ft.Text(f"Erro: {e} - FRONT-END"))
+        
+        page.views.append(
+            ft.View(
+                f"/addObjetoVotacao/{votacao_id}",
+                [
+                    ft.Text(f"Votar em qual Objeto para a votação: teste", size=20), #{votacao_nome}
+                    *botoes_objetos_possiveis,
+                    ft.ElevatedButton("Voltar", on_click=lambda e: page.go("/"))
+                ]
+            )
         )
+        page.go(f"/addEleitorVotacao/{votacao_id}")
+        # return ft.View(
+        #     route=f"/votacao/{votacao_id}",
+        #     controls=[
+        #         ft.Text(f"Você está na votação ID {votacao_id}", size=24),
+        #         ft.ElevatedButton("Voltar", on_click=lambda e: page.go("/"))
+        #     ],
+        #     vertical_alignment=ft.MainAxisAlignment.CENTER,
+        #     horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        # )
 
     def route_change(e: ft.RouteChangeEvent):
         rota = e.route
