@@ -18,80 +18,6 @@ REMETENTE_NOME = "Sistema de Votação"
 # def start_server():
 #     subprocess.Popen(["python", "servidor.py"])
 
-def enviar_email(email: str, existente: bool):
-    encoded_email = urllib.parse.quote(email)
-
-    if existente:
-        conteudo = f"""
-        <div style="font-family:Arial,sans-serif;background-color:#f9f9f9;padding:30px;text-align:center;color:#333;">
-            <div style="max-width:600px;margin:auto;background-color:#ffffff;padding:30px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-                <img src="{LOGO_URL}" alt="Logo Votus" style="width:120px;margin-bottom:20px;border-radius:8px"/>
-                <h1 style="color:#FF585B;">Bem-vindo de volta à Votus!</h1>
-                <p style="font-size:16px;margin:20px 0;">
-                    Identificamos que você já possui uma conta em nossa plataforma.
-                    Deseja continuar com sua votação?
-                </p>
-                <a href="{CONFIRM_URL + encoded_email}" style="display:inline-block;margin:10px;padding:12px 24px;background-color:#FF585B;color:white;text-decoration:none;border-radius:5px;font-weight:bold;">
-                    Sim, continuar votação
-                </a>
-                <a href="#" style="display:inline-block;margin:10px;padding:12px 24px;background-color:#cccccc;color:#333;text-decoration:none;border-radius:5px;">
-                    Não, obrigado
-                </a>
-                <hr style="margin:40px 0;border:none;border-top:1px solid #eee"/>
-                <p style="font-size:14px;color:#666;">
-                    A <strong>Votus</strong> é a plataforma mais segura e moderna para suas votações. 
-                    Privacidade, praticidade e confiança em cada clique. 🔒
-                </p>
-                <p style="font-size:13px;color:#aaa;">© 2025 Votus. Todos os direitos reservados.</p>
-            </div>
-        </div>
-        """
-    else:
-        conteudo = f"""
-        <div style="font-family:Arial,sans-serif;background-color:#f9f9f9;padding:30px;text-align:center;color:#333;">
-            <div style="max-width:600px;margin:auto;background-color:#ffffff;padding:30px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-                <img src="{LOGO_URL}" alt="Logo Votus" style="width:120px;margin-bottom:20px;border-radius:8px"/>
-                <h1 style="color:#FF585B;">Seja bem-vindo à Votus!</h1>
-                <p style="font-size:16px;margin:20px 0;">
-                    Percebemos que você ainda não tem uma conta em nossa plataforma.
-                    Gostaria de se cadastrar agora e participar da votação?
-                </p>
-                <a href="{CONFIRM_URL + encoded_email}" style="display:inline-block;margin:10px;padding:12px 24px;background-color:#FF585B;color:white;text-decoration:none;border-radius:5px;font-weight:bold;">
-                    Sim, quero me cadastrar
-                </a>
-                <a href="#" style="display:inline-block;margin:10px;padding:12px 24px;background-color:#cccccc;color:#333;text-decoration:none;border-radius:5px;">
-                    Não, obrigado
-                </a>
-                <hr style="margin:40px 0;border:none;border-top:1px solid #eee"/>
-                <p style="font-size:14px;color:#666;">
-                    Descubra como a <strong>Votus</strong> revoluciona a forma de votar. 
-                    Simples, intuitivo e totalmente online. Comece agora! 🗳️
-                </p>
-                <p style="font-size:13px;color:#aaa;">© 2025 Votus. Todos os direitos reservados.</p>
-            </div>
-        </div>
-        """
-        
-
-    payload = {
-        "api_key": SMTP2GO_API_KEY,
-        "to": [email],
-        "sender": REMETENTE_EMAIL,
-        "subject": "Verificação de Conta",
-        "html_body": conteudo,
-        "text_body": "Verifique sua conta no site.",
-        "custom_headers": [{"header": "Reply-To", "value": REMETENTE_EMAIL}]
-    }
-
-    response = requests.post(
-        "https://api.smtp2go.com/v3/email/send",
-        headers={"Content-Type": "application/json"},
-        json=payload
-    )
-
-    print("Status:", response.status_code)
-    print("Resposta:", response.text)
-    return response.status_code == 200
 
 def main(page: ft.Page):
     page.title = "Login"
@@ -99,6 +25,81 @@ def main(page: ft.Page):
     page.window.full_screen = True
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    
+    def enviar_email(email: str, existente: bool):
+        encoded_email = urllib.parse.quote(email)
+
+        if existente:
+            conteudo = f"""
+            <div style="font-family:Arial,sans-serif;background-color:#f9f9f9;padding:30px;text-align:center;color:#333;">
+                <div style="max-width:600px;margin:auto;background-color:#ffffff;padding:30px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+                    <img src="{LOGO_URL}" alt="Logo Votus" style="width:120px;margin-bottom:20px;border-radius:8px"/>
+                    <h1 style="color:#FF585B;">Bem-vindo de volta à Votus!</h1>
+                    <p style="font-size:16px;margin:20px 0;">
+                        Identificamos que você já possui uma conta em nossa plataforma.
+                        Deseja continuar com sua votação?
+                    </p>
+                    <a href="{CONFIRM_URL + encoded_email}" style="display:inline-block;margin:10px;padding:12px 24px;background-color:#FF585B;color:white;text-decoration:none;border-radius:5px;font-weight:bold;">
+                        Sim, continuar votação
+                    </a>
+                    <a href="#" style="display:inline-block;margin:10px;padding:12px 24px;background-color:#cccccc;color:#333;text-decoration:none;border-radius:5px;">
+                        Não, obrigado
+                    </a>
+                    <hr style="margin:40px 0;border:none;border-top:1px solid #eee"/>
+                    <p style="font-size:14px;color:#666;">
+                        A <strong>Votus</strong> é a plataforma mais segura e moderna para suas votações. 
+                        Privacidade, praticidade e confiança em cada clique. 🔒
+                    </p>
+                    <p style="font-size:13px;color:#aaa;">© 2025 Votus. Todos os direitos reservados.</p>
+                </div>
+            </div>
+            """
+        else:
+            conteudo = f"""
+            <div style="font-family:Arial,sans-serif;background-color:#f9f9f9;padding:30px;text-align:center;color:#333;">
+                <div style="max-width:600px;margin:auto;background-color:#ffffff;padding:30px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+                    <img src="{LOGO_URL}" alt="Logo Votus" style="width:120px;margin-bottom:20px;border-radius:8px"/>
+                    <h1 style="color:#FF585B;">Seja bem-vindo à Votus!</h1>
+                    <p style="font-size:16px;margin:20px 0;">
+                        Percebemos que você ainda não tem uma conta em nossa plataforma.
+                        Gostaria de se cadastrar agora e participar da votação?
+                    </p>
+                    <a href="{CONFIRM_URL + encoded_email}" style="display:inline-block;margin:10px;padding:12px 24px;background-color:#FF585B;color:white;text-decoration:none;border-radius:5px;font-weight:bold;">
+                        Sim, quero me cadastrar
+                    </a>
+                    <a href="#" style="display:inline-block;margin:10px;padding:12px 24px;background-color:#cccccc;color:#333;text-decoration:none;border-radius:5px;">
+                        Não, obrigado
+                    </a>
+                    <hr style="margin:40px 0;border:none;border-top:1px solid #eee"/>
+                    <p style="font-size:14px;color:#666;">
+                        Descubra como a <strong>Votus</strong> revoluciona a forma de votar. 
+                        Simples, intuitivo e totalmente online. Comece agora! 🗳️
+                    </p>
+                    <p style="font-size:13px;color:#aaa;">© 2025 Votus. Todos os direitos reservados.</p>
+                </div>
+            </div>
+            """
+            
+
+        payload = {
+            "api_key": SMTP2GO_API_KEY,
+            "to": [email],
+            "sender": REMETENTE_EMAIL,
+            "subject": "Verificação de Conta",
+            "html_body": conteudo,
+            "text_body": "Verifique sua conta no site.",
+            "custom_headers": [{"header": "Reply-To", "value": REMETENTE_EMAIL}]
+        }
+
+        response = requests.post(
+            "https://api.smtp2go.com/v3/email/send",
+            headers={"Content-Type": "application/json"},
+            json=payload
+        )
+
+        print("Status:", response.status_code)
+        print("Resposta:", response.text)
+        return response.status_code == 200
 
     # FUNÇÃO QUE ADD EMIAL NO BANCO DE DADOS
     def registrar(e):
