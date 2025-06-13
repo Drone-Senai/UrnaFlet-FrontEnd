@@ -1,6 +1,7 @@
 import flet as ft
 import requests
 from functools import partial
+from datetime import datetime
 
 API_URL = "http://127.0.0.1:8000"
 
@@ -10,6 +11,9 @@ def main(page: ft.Page):
 
     def ir_para_votacao(e, votacao_id: int):
         page.go(f"/votacao/{votacao_id}")
+        
+    def ir_para_resultados(e, votacao_id: int):
+        page.go(f"/resultados/{votacao_id}")
 
     def carregar_view_lista_votacoes():
         res = requests.get(f"{API_URL}/votacoes")
@@ -20,9 +24,17 @@ def main(page: ft.Page):
         cards = []
 
         for v in votacoes:
+            
+            data_final = datetime.strptime(v["Data_final"], "%d/%m/%Y") 
+            encerrada = data_final < datetime.now()
+            #print(encerrada)
+
+            texto_botao = "Ver Resultados" if encerrada else "Participar"
+            rota_destino = ir_para_resultados if encerrada else ir_para_votacao
+                        
             cards.append(
                 ft.Container(
-                    content=ft.Row([
+                    content=ft.Row ([
                         ft.Column([
                             ft.Text("Data de Encerramento", weight="bold"),
                             ft.Text(v["Data_final"] or "dd/mm/yyyy"),
@@ -39,17 +51,19 @@ def main(page: ft.Page):
                             ft.Text("Participantes", weight="bold"),
                              ft.Text("XX"),   # <--------Adicionar um contador real quando voto estiver pronto 
                         ]),
+                        # IF SE PASSOU DA DATA
                         ft.ElevatedButton(
-                            "Participar",
+                            texto_botao,
                             bgcolor=ft.Colors.RED,
                             color=ft.Colors.WHITE,
                             style=ft.ButtonStyle(
                                 padding=ft.padding.symmetric(horizontal=24, vertical=20)
                             ),
-                            on_click=partial(ir_para_votacao, votacao_id=v["ID_Votacao"])
+                            on_click=partial(rota_destino, votacao_id=v["ID_Votacao"])
                         )
+                        # FIM DO IF
                     ],
-                    alignment="spaceBetween"),
+                    alignment="spaceBetween"), # <--- FIM DA ROW
                     border=ft.border.all(2, ft.Colors.RED),
                     border_radius=10,
                     padding=10,
@@ -63,7 +77,7 @@ def main(page: ft.Page):
                     )
                 )
             )
-
+            
         return ft.View(
             route="/",
             controls=[
@@ -98,12 +112,12 @@ def main(page: ft.Page):
             page.update()
 
         try:
-            res = requests.get(f"{API_URL}/objetos")
+            res = requests.get(f"{API_URL}/objetos", params={"id_votacao": votacao_id})
             if res.status_code == 200:
                 objetos = res.json()
                 for obj in objetos:
                     def make_on_click(obj_id):
-                        return lambda e: adicionar_voto(1, votacao_id, obj_id)
+                        return lambda e: adicionar_voto(1, votacao_id, obj_id) #<--- 1 aqui provisorio até termos rotas funcionando para trazer o id_eleitor
 
                     btn = ft.ElevatedButton(
                         text=obj['nome'],
@@ -127,7 +141,55 @@ def main(page: ft.Page):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
 
+    def carregar_view_resultado(votacao_id: str):
+        msg = ft.Text(value="", color=ft.Colors.RED)
+        botoes_resultados = []
 
+        # def adicionar_voto(id_eleitor, id_votacao, id_objeto_votacao):
+        #     try:
+        #         res = requests.post(f"{API_URL}/adicionar_voto", json={
+        #             "id_votacao": id_votacao,
+        #             "id_eleitor": id_eleitor,
+        #             "id_objeto_votacao": id_objeto_votacao
+        #         })
+        #         if res.status_code == 200:
+        #             msg.value = "Voto feito com sucesso!"
+        #             msg.color = ft.Colors.GREEN
+        #         else:
+        #             msg.value = res.json().get("mensagem", "Erro ao votar.")
+        #             msg.color = ft.Colors.RED
+        #     except Exception as err:
+        #         msg.value = f"Erro: {err} - FRONT-END"
+        #         msg.color = ft.Colors.RED
+        #     page.update()
+
+        try:
+            res = requests.get(f"{API_URL}/resultados", params={"id_votacao": votacao_id})
+            if res.status_code == 200:
+                resultados = res.json()
+                for result in resultados:
+                    texto = ft.Text(
+                        value=f"{result['nome']} - {result['total_votos']} voto(s)",
+                        size=18,
+                        weight="bold"
+                    )
+                    botoes_resultados.append(texto)
+            else:
+                print("Erro ao buscar resultados")
+        except Exception as e:
+            print(f"Erro na requisição: {str(e)}")
+
+        return ft.View(
+            route=f"/resultados/{votacao_id}",
+            controls=[
+                ft.Text(f"Você está nos resultados da votação ID {votacao_id}", size=24),
+                *botoes_resultados,
+                ft.ElevatedButton("Voltar", on_click=lambda e: page.go("/")),
+                msg
+            ],
+            vertical_alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
 
     def route_change(e: ft.RouteChangeEvent):
         rota = e.route
@@ -138,6 +200,9 @@ def main(page: ft.Page):
         elif rota.startswith("/votacao/"):
             id_votacao = rota.split("/")[2]
             page.views.append(carregar_view_votacao(id_votacao))
+        elif rota.startswith("/resultados/"):
+            id_votacao = rota.split("/")[2]
+            page.views.append(carregar_view_resultado(id_votacao))
 
         page.update()
 
