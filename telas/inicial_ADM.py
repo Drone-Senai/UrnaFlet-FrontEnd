@@ -106,6 +106,9 @@ def build(page: ft.Page):
     def ir_para_cadastrar_objeto(e):
         page.go("/objetos")
 
+    def ir_para_add_eleitorvotacao(e):
+        page.go("/eleitor-votacao")
+
     def encerrar_votacao_por_tema(e):
         tema_escolhido = temas_dropdown.value
         if not tema_escolhido:
@@ -184,12 +187,19 @@ def build(page: ft.Page):
         )         
     )
 
-    btn_ver_votacoes = ft.ElevatedButton(
+    btn_add_objetovotacao = ft.ElevatedButton(
         "Adicionar Objeto a Votação",
         icon=ft.Icons.LIST_ALT,
         bgcolor=ft.Colors.RED,
         color=ft.Colors.WHITE,
         on_click=ir_para_add_objetovotacao
+    )
+    btn_add_eleitorvotacao = ft.ElevatedButton(
+        "Adicionar Eleitor a Votação",
+        icon=ft.Icons.LIST_ALT,
+        bgcolor=ft.Colors.RED,
+        color=ft.Colors.WHITE,
+        on_click=ir_para_add_eleitorvotacao
     )
 
     btn_objetos = ft.ElevatedButton(
@@ -219,7 +229,7 @@ def build(page: ft.Page):
                         alignment=ft.MainAxisAlignment.CENTER
                     ),
                     ft.Row(
-                        [btn_ver_votacoes, btn_objetos],
+                        [btn_add_eleitorvotacao,btn_add_objetovotacao, btn_objetos],
                         alignment=ft.MainAxisAlignment.CENTER
                     ),
                     ft.Divider(height=10, color="transparent"),

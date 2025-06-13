@@ -1,7 +1,8 @@
 import flet as ft
-from telas import inicial_ADM, objeto_ADM, objeto_votacao_ADM
+from telas import inicial_ADM, objeto_ADM, objeto_votacao_ADM,eleitor_votacao
 
 def main(page: ft.Page):
+
     def route_change(e):
         page.views.clear()
 
@@ -9,6 +10,8 @@ def main(page: ft.Page):
             page.views.append(inicial_ADM.build(page))
         elif page.route == "/objetos":
             page.views.append(objeto_ADM.build(page))
+        elif page.route == "/eleitor-votacao":
+            page.views.append(eleitor_votacao.build(page))
         elif page.route == "/objeto-votacao":
             page.views.append(objeto_votacao_ADM.build(page))
         page.update()
