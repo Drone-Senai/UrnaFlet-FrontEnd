@@ -76,42 +76,58 @@ def main(page: ft.Page):
 
     #/votacoes/1/objetos?eleitor_id=10 <--- exemplo
     def carregar_view_votacao(votacao_id: str):
-        botoes_objetos_possiveis = []
+        msg = ft.Text(value="", color=ft.Colors.RED)
+        botoes_objetos = []
+
+        def adicionar_voto(id_eleitor, id_votacao, id_objeto_votacao):
+            try:
+                res = requests.post(f"{API_URL}/adicionar_voto", json={
+                    "id_votacao": id_votacao,
+                    "id_eleitor": id_eleitor,
+                    "id_objeto_votacao": id_objeto_votacao
+                })
+                if res.status_code == 200:
+                    msg.value = "Voto feito com sucesso!"
+                    msg.color = ft.Colors.GREEN
+                else:
+                    msg.value = res.json().get("mensagem", "Erro ao votar.")
+                    msg.color = ft.Colors.RED
+            except Exception as err:
+                msg.value = f"Erro: {err} - FRONT-END"
+                msg.color = ft.Colors.RED
+            page.update()
+
         try:
             res = requests.get(f"{API_URL}/objetos")
             if res.status_code == 200:
                 objetos = res.json()
                 for obj in objetos:
-                    botao = ft.ElevatedButton(
-                        text=obj["nome"],
-                        on_click=lambda e, oid=obj["id"]: obj(oid) # <--- FUNÇÃO A SER CHAMADA AINDA
+                    def make_on_click(obj_id):
+                        return lambda e: adicionar_voto(1, votacao_id, obj_id)
+
+                    btn = ft.ElevatedButton(
+                        text=obj['nome'],
+                        on_click=make_on_click(obj['id'])  # Correção do lambda
                     )
-                    botoes_objetos_possiveis.append(botao)
+                    botoes_objetos.append(btn)
             else:
-                botoes_objetos_possiveis.append(ft.Text("Erro ao buscar objetos."))
+                print("Erro ao buscar objetos")
         except Exception as e:
-            botoes_objetos_possiveis.append(ft.Text(f"Erro: {e} - FRONT-END"))
-        
-        page.views.append(
-            ft.View(
-                f"/addObjetoVotacao/{votacao_id}",
-                [
-                    ft.Text(f"Votar em qual Objeto para a votação: teste", size=20), #{votacao_nome}
-                    *botoes_objetos_possiveis,
-                    ft.ElevatedButton("Voltar", on_click=lambda e: page.go("/"))
-                ]
-            )
+            print(f"Erro na requisição: {str(e)}")
+
+        return ft.View(
+            route=f"/votacao/{votacao_id}",
+            controls=[
+                ft.Text(f"Você está na votação ID {votacao_id}", size=24),
+                *botoes_objetos,
+                ft.ElevatedButton("Voltar", on_click=lambda e: page.go("/")),
+                msg
+            ],
+            vertical_alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
-        page.go(f"/addEleitorVotacao/{votacao_id}")
-        # return ft.View(
-        #     route=f"/votacao/{votacao_id}",
-        #     controls=[
-        #         ft.Text(f"Você está na votação ID {votacao_id}", size=24),
-        #         ft.ElevatedButton("Voltar", on_click=lambda e: page.go("/"))
-        #     ],
-        #     vertical_alignment=ft.MainAxisAlignment.CENTER,
-        #     horizontal_alignment=ft.CrossAxisAlignment.CENTER
-        # )
+
+
 
     def route_change(e: ft.RouteChangeEvent):
         rota = e.route
