@@ -23,7 +23,7 @@ def build(page: ft.Page):
         file_picker.pick_files(allow_multiple=False)
 
     def voltar_para_tela_principal(e):
-        page.go("/")
+        page.go("/inicial_ADM")
 
     def foto_selecionada(e: ft.FilePickerResultEvent):
         if e.files:

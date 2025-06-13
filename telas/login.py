@@ -7,7 +7,7 @@ import urllib.parse
 import asyncio
 # Imagem e link de confirmação
 LOGO_URL = "https://lh3.googleusercontent.com/chat_attachment/AP1Ws4vVUU-_RiAddakivrHdPYOfPlkue8vpmmpiekOqFJHLXHw04W9ubKgF9dOzpIve1YLvgvWQbyE7TWsNppU6lPSSM6b3dlk57eUNmKJWA3Ej2NJjSZKZ3mDOO7x-3UTsLpcM6KNbGzbwNaoO69CJ16IEPq5ufOPkkdaAsJs43W3S-f--oUh3-sRkMgNeBEwhs-y-lXP89UDFTHUPcpjUL3KSq8K8Vl8IMyE1m0qa2T7qn9f8eeOsQhpigyHoUByziDmVkc9CddqCuTP4ESrvYEw6pasfl-GlmH6b4RZ2ccWh5f2CevkMAK2oFJSw5WLF3aQ=w512"
-CONFIRM_URL = "http://10.83.10.189:8000/confirmar?email="
+CONFIRM_URL = "http://192.168.18.64:8000/confirmar?email="
 
 API_URL = "http://127.0.0.1:8000/"
 
@@ -18,11 +18,9 @@ REMETENTE_NOME = "Sistema de Votação"
 # def start_server():
 #     subprocess.Popen(["python", "servidor.py"])
 
-
-def main(page: ft.Page):
+def build(page: ft.Page):
     page.title = "Login"
     page.bgcolor = ft.Colors.WHITE
-    page.window.full_screen = True
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     
@@ -162,8 +160,20 @@ def main(page: ft.Page):
                     r = requests.get(f"{API_URL}/confirmado", params={"email": email})
                     if r.status_code == 200 and r.json().get("confirmado"):
                         status_text.value = "✅ Email confirmado! Acesso liberado."
+                        page.session.set("usuario_logado", email)
                         print("Email existente no Banco de Dados")
                         page.update()
+
+                        # NOVA VERIFICAÇÃO: Se é administrador
+                        try:
+                            admin_res = requests.post(f"{API_URL}/verificar-administrador", json={"email": email})
+                            if admin_res.status_code == 200 and admin_res.json().get("administrador"):
+                                page.go("/inicial_ADM")
+                            else:
+                                page.go("/ver_votacao")
+                        except Exception as ex:
+                            status_text.value = f"Erro ao redirecionar: {ex}"
+                            page.update()
                         return
                 except:
                     pass
@@ -174,14 +184,14 @@ def main(page: ft.Page):
             page.update()
     esquerda = ft.Container(
         content=ft.Column([
-            ft.Text("Possui uma conta ?", size=30, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+            ft.Text("Possui uma conta ?", size=35, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
             ft.Text(
                 "Ei, se você ainda não tem uma conta por aqui! Que tal aproveitar e \n"
                 "se juntar ao melhor site de votações da internet? É rapidinho, grátis e você\n"
                 " ainda participa das decisões mais importantes com apenas alguns cliques. \n"
                 "Não fique de fora dessa — insira o seu e email no campo ao lado, verifique \n"
                 "a sua caixa de SPAM e comece a votar com estilo!",
-                size=14,
+                size=12,
                 color=ft.Colors.WHITE,
             ),
             ft.Text("OBS: O email pode demorar alguns segundos para chegar em seu correio!", size=14, color=ft.Colors.WHITE,weight=ft.FontWeight.W_600),
@@ -219,8 +229,12 @@ def main(page: ft.Page):
         expand=True
     )
 
-    page.add(layout)
+    return ft.View(
+        route="/",
+        controls=[layout],  # O layout final que você montou
+        scroll=ft.ScrollMode.AUTO,
+        vertical_alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+    )
 
-
-ft.app(target=main)
 #rodar codigo com: uvicorn main:app --host 0.0.0.0 --port 8000 --reload

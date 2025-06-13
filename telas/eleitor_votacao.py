@@ -45,7 +45,7 @@ def build(page: ft.Page):
         page.update()
 
     def voltar_para_tela_principal(e):
-        page.go("/")
+        page.go("/inicial_ADM")
 
     def carregar_eleitores():
         botoes_eleitores.controls.clear()

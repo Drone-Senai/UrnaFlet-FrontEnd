@@ -45,7 +45,7 @@ def build(page: ft.Page):
             msg.color = ft.Colors.RED
         page.update()
     def voltar_para_tela_principal(e):
-        page.go("/")
+        page.go("/inicial_ADM")
 
     def carregar_objetos():
         botoes_objetos.controls.clear()

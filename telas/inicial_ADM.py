@@ -8,6 +8,8 @@ import os
 API_URL = "http://127.0.0.1:8000"
 
 def build(page: ft.Page):
+    usuario_logado = page.session.get("usuario_logado")
+    print("Usuário logado:", usuario_logado)
     page.clean()
     page.title = "Gerenciar Votações"
     page.scroll = ft.ScrollMode.AUTO
@@ -98,7 +100,7 @@ def build(page: ft.Page):
         page.update()
         
     def voltar_para_tela_principal(e):
-        page.go("/login") 
+        page.go("/") 
 
     def ir_para_add_objetovotacao(e):
         page.go("/objeto-votacao")
@@ -219,7 +221,7 @@ def build(page: ft.Page):
     )
 
     return ft.View(
-        route="/",
+        route="/inicial_ADM",
         controls=[
             ft.Column(
                 [
