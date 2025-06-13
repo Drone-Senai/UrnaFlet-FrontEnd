@@ -4,10 +4,10 @@ import re
 import json
 import requests
 import urllib.parse
-
+import asyncio
 # Imagem e link de confirmação
 LOGO_URL = "https://lh3.googleusercontent.com/chat_attachment/AP1Ws4vVUU-_RiAddakivrHdPYOfPlkue8vpmmpiekOqFJHLXHw04W9ubKgF9dOzpIve1YLvgvWQbyE7TWsNppU6lPSSM6b3dlk57eUNmKJWA3Ej2NJjSZKZ3mDOO7x-3UTsLpcM6KNbGzbwNaoO69CJ16IEPq5ufOPkkdaAsJs43W3S-f--oUh3-sRkMgNeBEwhs-y-lXP89UDFTHUPcpjUL3KSq8K8Vl8IMyE1m0qa2T7qn9f8eeOsQhpigyHoUByziDmVkc9CddqCuTP4ESrvYEw6pasfl-GlmH6b4RZ2ccWh5f2CevkMAK2oFJSw5WLF3aQ=w512"
-CONFIRM_URL = "http://localhost:8000/confirmar?email="
+CONFIRM_URL = "http://10.83.10.189:8000/confirmar?email="
 
 API_URL = "http://127.0.0.1:8000/"
 
@@ -103,20 +103,15 @@ def main(page: ft.Page):
     # FUNÇÃO QUE ADD EMIAL NO BANCO DE DADOS
     def registrar(e):
         res = requests.post(f"{API_URL}/register", json={
-            #"nome": nome.value,
             "email": email_field.value
         })
         print(email_field.value)
-        print('--0-----------00------------------------------------0')
         if res.status_code == 200:
-            # msg.value = "Usuário criado com sucesso!"
-            # msg.color = ft.Colors.GREEN
             print('Email adicionado com sucesso')
         else:
-            # msg.value = res.json().get("detail", "Erro")
-            # msg.color = ft.Colors.RED
             print('Email não adicionado')
         page.update()
+
 
     email_field = ft.TextField(
         hint_text="Digite o seu email",
@@ -128,29 +123,31 @@ def main(page: ft.Page):
 
     status_text = ft.Text("", color=ft.Colors.RED)
 
-    def verificar_email(e):
-        import asyncio
-
+    async def verificar_email(e):
         email = email_field.value.strip()
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             status_text.value = "Email inválido."
             page.update()
             return
 
-        # Consulta via POST se o email já está cadastrado
         try:
             response = requests.post(f"{API_URL}/verificar-email", json={"email": email})
             response.raise_for_status()
-            print(response)
             ja_cadastrado = response.json().get("existe", False)
-            print(ja_cadastrado)
         except Exception as ex:
             status_text.value = f"Erro ao verificar email: {ex}"
             page.update()
             return
 
+        try:
+            requests.post(f"{API_URL}/registrar-token", json={"email": email})
+        except Exception as ex:
+            status_text.value = f"Erro ao registrar token: {ex}"
+            page.update()
+            return
+
         if not ja_cadastrado:
-            registrar(e)  # Registra o novo email no banco se ainda não existir
+            registrar(e)
 
         sucesso = enviar_email(email, ja_cadastrado)
 
@@ -158,27 +155,22 @@ def main(page: ft.Page):
             status_text.value = "Email enviado! Verifique sua caixa de entrada..."
             page.update()
 
-            async def verificar_confirmacao():
-                for _ in range(60):  # tenta por ~3min (60 x 3s)
-                    await asyncio.sleep(3)
-                    try:
-                        r = requests.get(f"{API_URL}/confirmado", params={"email": email})
-                        if r.status_code == 200 and r.json().get("confirmado"):
-                            status_text.value = "✅ Email confirmado! Acesso liberado."
-                            print("Email existente no Banco de Dados")
-                            page.update()
-                            return
-                    except:
-                        pass
-                status_text.value = "⏳ Tempo esgotado para confirmação."
-                page.update()
-
-            page.run_async(verificar_confirmacao)
+            for _ in range(60):
+                await asyncio.sleep(3)
+                try:
+                    r = requests.get(f"{API_URL}/confirmado", params={"email": email})
+                    if r.status_code == 200 and r.json().get("confirmado"):
+                        status_text.value = "✅ Email confirmado! Acesso liberado."
+                        print("Email existente no Banco de Dados")
+                        page.update()
+                        return
+                except:
+                    pass
+            status_text.value = "⏳ Tempo esgotado para confirmação."
+            page.update()
         else:
             status_text.value = "Erro ao enviar o email. Veja o terminal."
             page.update()
-
-
     esquerda = ft.Container(
         content=ft.Column([
             ft.Text("Possui uma conta ?", size=30, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
@@ -230,3 +222,4 @@ def main(page: ft.Page):
 
 
 ft.app(target=main)
+#rodar codigo com: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
