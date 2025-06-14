@@ -5,6 +5,7 @@ def main(page: ft.Page):
 
     def route_change(e):
         page.views.clear()
+        page.window.full_screen = True
 
         if page.route == "/":
             page.views.append(login.build(page))

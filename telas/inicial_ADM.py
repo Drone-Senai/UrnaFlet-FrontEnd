@@ -10,6 +10,8 @@ API_URL = "http://127.0.0.1:8000"
 def build(page: ft.Page):
     usuario_logado = page.session.get("usuario_logado")
     print("Usuário logado:", usuario_logado)
+    
+
     page.clean()
     page.title = "Gerenciar Votações"
     page.scroll = ft.ScrollMode.AUTO

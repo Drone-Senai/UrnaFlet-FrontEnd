@@ -21,6 +21,7 @@ REMETENTE_NOME = "Sistema de Votação"
 def build(page: ft.Page):
     page.title = "Login"
     page.bgcolor = ft.Colors.WHITE
+    # page.window.full_screen = True
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     
@@ -184,7 +185,7 @@ def build(page: ft.Page):
             page.update()
     esquerda = ft.Container(
         content=ft.Column([
-            ft.Text("Possui uma conta ?", size=35, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+            ft.Text("Possui uma conta ?", size=50, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
             ft.Text(
                 "Ei, se você ainda não tem uma conta por aqui! Que tal aproveitar e \n"
                 "se juntar ao melhor site de votações da internet? É rapidinho, grátis e você\n"
@@ -194,15 +195,15 @@ def build(page: ft.Page):
                 size=12,
                 color=ft.Colors.WHITE,
             ),
-            ft.Text("OBS: O email pode demorar alguns segundos para chegar em seu correio!", size=14, color=ft.Colors.WHITE,weight=ft.FontWeight.W_600),
+            ft.Text("OBS: O email pode demorar alguns segundos para chegar em seu correio!", size=20, color=ft.Colors.WHITE,weight=ft.FontWeight.W_600),
             ft.Image(src="image1.png", width=600)
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.START,
-        spacing=20),
+        spacing=40),
         bgcolor="#FF585B",
         expand=True,
-        padding=40
+        padding=200
     )
 
     direita = ft.Container(
@@ -232,7 +233,6 @@ def build(page: ft.Page):
     return ft.View(
         route="/",
         controls=[layout],  # O layout final que você montou
-        scroll=ft.ScrollMode.AUTO,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER
     )
