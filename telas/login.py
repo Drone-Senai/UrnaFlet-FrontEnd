@@ -271,7 +271,7 @@ def build(page: ft.Page):
         content=ft.Column([
             ft.Text("Login", size=24, weight=ft.FontWeight.BOLD, color="#FF585B"),
             email_field,
-            nome_field,
+            # nome_field,
             ft.ElevatedButton(
                 "Login",
                 bgcolor="#FF585B",

@@ -1,5 +1,5 @@
 import flet as ft
-from telas import inicial_ADM, objeto_ADM, objeto_votacao_ADM,eleitor_votacao, login
+from telas import inicial_ADM, objeto_ADM, objeto_votacao_ADM,eleitor_votacao, login,ver_votacao
 
 def main(page: ft.Page):
 
@@ -19,6 +19,8 @@ def main(page: ft.Page):
             page.views.append(login.build(page))
         elif page.route == "/inicial_ADM":
             page.views.append(inicial_ADM.build(page))# NOVA ROTA
+        elif page.route == "/ver_votacao":
+            page.views.append(ver_votacao.build(page))            
         page.update()
     page.on_route_change = route_change
     page.go(page.route or "/")  # abre a rota atual ou padrão "/"
