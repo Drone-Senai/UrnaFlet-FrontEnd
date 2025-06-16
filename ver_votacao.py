@@ -2,6 +2,9 @@ import flet as ft
 import requests
 from functools import partial
 from datetime import datetime
+import matplotlib.pyplot as plt
+import io
+import base64
 
 API_URL = "http://127.0.0.1:8000"
 
@@ -24,14 +27,15 @@ def main(page: ft.Page):
         cards = []
 
         for v in votacoes:
-            
-            data_final = datetime.strptime(v["Data_final"], "%d/%m/%Y") 
-            encerrada = data_final < datetime.now()
-            #print(encerrada)
+
+            data_final = datetime.strptime(v["Data_final"], "%d/%m/%Y")
+            encerrada = data_final < datetime.now() or v["Status_Votacao"] == 0
+            # print(encerrada)
 
             texto_botao = "Ver Resultados" if encerrada else "Participar"
+            texto_status = "Encerrada" if encerrada else "Ativa"
             rota_destino = ir_para_resultados if encerrada else ir_para_votacao
-                        
+                                    
             cards.append(
                 ft.Container(
                     content=ft.Row ([
@@ -46,6 +50,10 @@ def main(page: ft.Page):
                         ft.Column([
                             ft.Text("Assunto", weight="bold"),
                             ft.Text(v["Tema"]),
+                        ]),
+                        ft.Column([
+                            ft.Text("Status", weight="bold"),
+                            ft.Text(texto_status),
                         ]),
                         ft.Column([
                             ft.Text("Participantes", weight="bold"),
@@ -87,6 +95,8 @@ def main(page: ft.Page):
             vertical_alignment=ft.MainAxisAlignment.START,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
+
+    
 
     #/votacoes/1/objetos?eleitor_id=10 <--- exemplo
     def carregar_view_votacao(votacao_id: str):
@@ -141,27 +151,26 @@ def main(page: ft.Page):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
 
+    def gerar_grafico_base64(resultados):
+        nomes = [r["nome"] for r in resultados]
+        votos = [r["total_votos"] for r in resultados]
+
+        fig, ax = plt.subplots(figsize=(5, 4), facecolor='none')
+        ax.pie(votos, labels=nomes, autopct='%1.1f%%', startangle=90)
+        ax.axis('equal')
+        fig.patch.set_alpha(0.0)
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png', transparent=True)
+        plt.close(fig)
+
+        buffer.seek(0)
+        img_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+        return img_base64
+        
     def carregar_view_resultado(votacao_id: str):
         msg = ft.Text(value="", color=ft.Colors.RED)
-        botoes_resultados = []
-
-        # def adicionar_voto(id_eleitor, id_votacao, id_objeto_votacao):
-        #     try:
-        #         res = requests.post(f"{API_URL}/adicionar_voto", json={
-        #             "id_votacao": id_votacao,
-        #             "id_eleitor": id_eleitor,
-        #             "id_objeto_votacao": id_objeto_votacao
-        #         })
-        #         if res.status_code == 200:
-        #             msg.value = "Voto feito com sucesso!"
-        #             msg.color = ft.Colors.GREEN
-        #         else:
-        #             msg.value = res.json().get("mensagem", "Erro ao votar.")
-        #             msg.color = ft.Colors.RED
-        #     except Exception as err:
-        #         msg.value = f"Erro: {err} - FRONT-END"
-        #         msg.color = ft.Colors.RED
-        #     page.update()
+        text_resultados = []
 
         try:
             res = requests.get(f"{API_URL}/resultados", params={"id_votacao": votacao_id})
@@ -170,20 +179,40 @@ def main(page: ft.Page):
                 for result in resultados:
                     texto = ft.Text(
                         value=f"{result['nome']} - {result['total_votos']} voto(s)",
-                        size=18,
-                        weight="bold"
+                        size=18
                     )
-                    botoes_resultados.append(texto)
+                    text_resultados.append(texto)
+                
+
+                img_base64 = gerar_grafico_base64(resultados)
+                grafico_img = ft.Image(
+                    src_base64=img_base64,
+                    width=400,
+                    height=400,
+                    fit=ft.ImageFit.CONTAIN
+                )
+
+                # Encontrar quem ganhou (quem tem maior total_votos)
+                vencedor = max(resultados, key=lambda r: r['total_votos'])
+                resultado_votacao = ft.Text(
+                    value=f"{vencedor['nome']} - Ganhou a Votação com {vencedor['total_votos']} voto(s)",
+                    size=18,
+                    weight='bold'
+                )
             else:
                 print("Erro ao buscar resultados")
         except Exception as e:
             print(f"Erro na requisição: {str(e)}")
+        
+
 
         return ft.View(
             route=f"/resultados/{votacao_id}",
             controls=[
                 ft.Text(f"Você está nos resultados da votação ID {votacao_id}", size=24),
-                *botoes_resultados,
+                *text_resultados,
+                grafico_img if grafico_img else ft.Text("Gráfico não disponível"),
+                resultado_votacao,
                 ft.ElevatedButton("Voltar", on_click=lambda e: page.go("/")),
                 msg
             ],

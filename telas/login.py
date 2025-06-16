@@ -103,7 +103,8 @@ def build(page: ft.Page):
     # FUNÇÃO QUE ADD EMIAL NO BANCO DE DADOS
     def registrar(e):
         res = requests.post(f"{API_URL}/register", json={
-            "email": email_field.value
+            "email": email_field.value,
+            #'nome': email_field.value
         })
         print(email_field.value)
         if res.status_code == 200:
@@ -120,6 +121,23 @@ def build(page: ft.Page):
         color="#FF585B",
         width=300,
     )
+
+    # # CAMPO PARA POR O NOME
+
+    # nome_field = ft.TextField(
+    #     hint_text="Digite seu nome",
+    #     border_color="#FF585B",
+    #     bgcolor="#FFDEDE",
+    #     color="#FF585B",
+    #     width=300,
+    #     visible=False  # inicialmente escondido
+    # )
+
+    # status_text = ft.Text("", color=ft.Colors.RED)
+
+    # ja_cadastrado_global = False  # variável para controlar estado
+
+    # #FIM
 
     status_text = ft.Text("", color=ft.Colors.RED)
 
@@ -138,6 +156,17 @@ def build(page: ft.Page):
             status_text.value = f"Erro ao verificar email: {ex}"
             page.update()
             return
+        
+        # if not ja_cadastrado:
+        #     # Se não cadastrado, mostra campo nome para o usuário preencher
+        #     nome_field.visible = True
+        #     status_text.value = "Email não cadastrado. Por favor, informe seu nome para cadastro."
+        #     page.update()
+        #     return  # para o fluxo aqui, espera o usuário preencher nome e clicar no botão novamente
+        
+        # # Se cadastrado, continua o processo normal
+        # nome_field.visible = False
+        # page.update()
 
         try:
             requests.post(f"{API_URL}/registrar-token", json={"email": email})
@@ -183,6 +212,38 @@ def build(page: ft.Page):
         else:
             status_text.value = "Erro ao enviar o email. Veja o terminal."
             page.update()
+
+    # def registrar_com_nome(e):
+    #     email = email_field.value.strip()
+    #     nome = nome_field.value.strip()
+
+    #     if not nome:
+    #         status_text.value = "Por favor, informe seu nome para cadastro."
+    #         page.update()
+    #         return
+
+    #     res = requests.post(f"{API_URL}/register", json={
+    #         "email": email,
+    #         "nome": nome
+    #     })
+    #     if res.status_code == 200:
+    #         status_text.value = "Cadastro realizado com sucesso! Agora, verifique seu email."
+    #         page.update()
+    #         # Depois do cadastro, pode enviar o email de confirmação:
+    #         enviar_email(email, False)
+    #     else:
+    #         status_text.value = "Erro ao cadastrar. Tente novamente."
+    #         page.update()
+
+    # # O botão deve chamar verificar_email se o nome_field está invisível,
+    # # ou registrar_com_nome se o nome_field está visível
+    # def on_login_click(e):
+    #     if nome_field.visible:
+    #         registrar_com_nome(e)
+    #     else:
+    #         # chamar a função async verificacao via create_task
+    #         asyncio.create_task(verificar_email(e))
+        
     esquerda = ft.Container(
         content=ft.Column([
             ft.Text("Possui uma conta ?", size=50, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
@@ -210,6 +271,7 @@ def build(page: ft.Page):
         content=ft.Column([
             ft.Text("Login", size=24, weight=ft.FontWeight.BOLD, color="#FF585B"),
             email_field,
+            nome_field,
             ft.ElevatedButton(
                 "Login",
                 bgcolor="#FF585B",
