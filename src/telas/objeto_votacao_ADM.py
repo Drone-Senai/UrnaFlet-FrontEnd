@@ -3,7 +3,7 @@ import requests
 import subprocess
 import os
 
-API_URL = "http://127.0.0.1:8000/"
+API_URL = "http://10.83.10.189:8000/"
 
 def build(page: ft.Page):
     page.clean()

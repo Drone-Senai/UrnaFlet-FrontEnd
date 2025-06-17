@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import io
 import base64
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = "http://10.83.10.189:8000/"
 
 def build(page: ft.Page):  # ← mudou de main() para build()
     page.title = "Sistema de Votação"
