@@ -221,12 +221,30 @@ def build(page: ft.Page):  # ← mudou de main() para build()
         return base64.b64encode(buffer.read()).decode('utf-8')
         
     def carregar_view_resultado(votacao_id: str):
-        msg = ft.Text(value="", color=ft.Colors.RED)
-        participantes_col = ft.Column()
-        imagem = ft.Image(width=200, height=200, fit=ft.ImageFit.CONTAIN, border_radius=10)
-        nome_selecionado = ft.Text(value="Nome", size=16, weight="bold")
-        grafico_img = ft.Image()
-        resultado_votacao = ft.Text("", size=18, weight="bold")
+        participantes_col = ft.Column(spacing=10, scroll=ft.ScrollMode.ALWAYS)
+        imagem = ft.Image(
+            src="../UrnaFlet-FrontEnd/imagemvoto.png",  # imagem padrão
+            width=200,
+            height=200,
+            fit=ft.ImageFit.CONTAIN,
+            border_radius=10
+        )
+        
+        nome_selecionado = ft.Text(
+            value="Selecione um participante",
+            size=20, weight="bold",
+            color=ft.Colors.WHITE,
+            text_align=ft.TextAlign.CENTER
+        )
+        grafico_img = ft.Image(width=360, height=360, border_radius=12)
+        resultado_votacao = ft.Text(
+            value="",
+            size=22,
+            weight="bold",
+            color=ft.Colors.WHITE,
+            text_align=ft.TextAlign.CENTER
+        )
+        erro_msg = ft.Text(value="", color=ft.Colors.RED)
 
         try:
             res = requests.get(f"{API_URL}/resultados", params={"id_votacao": votacao_id})
@@ -235,60 +253,102 @@ def build(page: ft.Page):  # ← mudou de main() para build()
 
                 for obj in resultados:
                     participantes_col.controls.append(
-                        ft.TextButton(
-                            text=f"{obj['nome']} - {obj['total_votos']} voto(s)",
-                            on_click=lambda e, obj=obj: (
-                                setattr(imagem, "src", f"{API_URL}/imagem/{obj['id']}"),
-                                setattr(nome_selecionado, "value", obj["nome"]),
-                                page.update()
+                        ft.Container(
+                            content=ft.TextButton(
+                                text=f"{obj['nome']} — {obj['total_votos']} voto(s)",
+                                on_click=lambda e, obj=obj: (
+                                    setattr(imagem, "src", f"{API_URL}/imagem/{obj['id']}"),
+                                    setattr(nome_selecionado, "value", obj["nome"]),
+                                    page.update()
+                                ),
+                                style=ft.ButtonStyle(
+                                    padding=ft.Padding(12, 8, 12, 8),
+                                    shape=ft.RoundedRectangleBorder(radius=8),
+                                    color=ft.Colors.BLACK87,
+                                    bgcolor=ft.Colors.WHITE,
+                                    overlay_color=ft.Colors.RED_100,
+                                )
                             ),
-                            style=ft.ButtonStyle(color=ft.Colors.RED)
+                            border=ft.border.only(bottom=ft.BorderSide(1, ft.Colors.RED_100)),
+                            padding=ft.Padding(5, 5, 5, 5)
                         )
                     )
 
                 vencedor = max(resultados, key=lambda r: r['total_votos'])
-                resultado_votacao.value = f"{vencedor['nome']} venceu com {vencedor['total_votos']} voto(s)"
-
+                resultado_votacao.value = f"🏆 {vencedor['nome']} venceu com {vencedor['total_votos']} voto(s)"
                 grafico_img.src_base64 = gerar_grafico_base64(resultados)
             else:
-                resultado_votacao.value = "Erro ao buscar resultados"
+                erro_msg.value = "Erro ao carregar os resultados."
         except Exception as e:
-            resultado_votacao.value = f"Erro: {e}"
+            erro_msg.value = f"Erro: {e}"
 
         return ft.View(
             route=f"/resultados/{votacao_id}",
+            scroll=ft.ScrollMode.AUTO,
             controls=[
-                ft.Text("Resultados", size=30, weight="bold", color=ft.Colors.RED),
-                ft.Row([
-                    ft.Container(
-                        width=300,
-                        content=ft.Column([
-                            ft.Text("Lista de participantes", weight="bold", color=ft.Colors.RED),
-                            ft.Divider(thickness=1, color=ft.Colors.RED_200),
-                            participantes_col
-                        ])
+                ft.Container(
+                    padding=30,
+                    bgcolor=ft.Colors.RED_50,
+                    border_radius=12,
+                    shadow=ft.BoxShadow(
+                        blur_radius=16,
+                        spread_radius=1,
+                        color=ft.Colors.RED_100,
+                        offset=ft.Offset(3, 3)
                     ),
-                    ft.Container(
-                        expand=True,
-                        bgcolor=ft.Colors.RED_200,
-                        border_radius=10,
-                        content=ft.Column([
-                            imagem,
-                            nome_selecionado,
-                            grafico_img,
-                            resultado_votacao
+                    content=ft.Column([
+                        ft.Text("📊 Resultado da Votação", size=34, weight="bold", color=ft.Colors.RED),
+                        ft.Divider(height=25, color="transparent"),
+                        ft.Row([
+                            ft.Container(
+                                width=360,
+                                padding=20,
+                                bgcolor=ft.Colors.WHITE,
+                                border_radius=12,
+                                shadow=ft.BoxShadow(blur_radius=10, color=ft.Colors.RED_100),
+                                content=ft.Column([
+                                    ft.Text("Participantes", size=22, weight="bold", color=ft.Colors.RED),
+                                    ft.Divider(thickness=1, color=ft.Colors.RED),
+                                    participantes_col
+                                ])
+                            ),
+                            ft.Container(
+                                expand=True,
+                                padding=30,
+                                bgcolor=ft.Colors.RED,
+                                border_radius=12,
+                                shadow=ft.BoxShadow(blur_radius=12, color=ft.Colors.RED_200),
+                                content=ft.Column([
+                                    imagem,
+                                    nome_selecionado,
+                                    grafico_img,
+                                    resultado_votacao
+                                ],
+                                spacing=25,
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                            )
                         ],
-                        alignment=ft.MainAxisAlignment.CENTER,
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        spacing=20),
-                        padding=20
-                    )
-                ],
-                vertical_alignment=ft.CrossAxisAlignment.START,
-                alignment=ft.MainAxisAlignment.CENTER),
-                ft.ElevatedButton("Voltar", on_click=lambda e: page.go("/ver_votacao"))
-            ],
-            scroll=ft.ScrollMode.AUTO
+                        alignment=ft.MainAxisAlignment.CENTER),
+                        ft.Container(height=20),
+                        ft.ElevatedButton(
+                            " Voltar para Votações ",
+                            icon=ft.Icons.ARROW_BACK,
+                            on_click=lambda e: page.go("/ver_votacao"),
+                            style=ft.ButtonStyle(
+                                shape=ft.RoundedRectangleBorder(radius=12),
+                                bgcolor=ft.Colors.RED_600,
+                                color=ft.Colors.WHITE,
+                                padding=ft.Padding(20, 14, 20, 14),
+                            )
+                        ),
+                        erro_msg
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                )
+            )
+            ]
         )
 
 
