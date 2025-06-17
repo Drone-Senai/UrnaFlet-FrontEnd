@@ -1,7 +1,7 @@
 import flet as ft
 import requests
 
-API_URL = "http://10.83.10.189:8000/"
+API_URL = "https://web-production-53f7f.up.railway.app/"
 
 def build(page: ft.Page):
     page.clean()

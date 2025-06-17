@@ -7,9 +7,9 @@ import urllib.parse
 import asyncio
 # Imagem e link de confirmação
 LOGO_URL = "https://lh3.googleusercontent.com/chat_attachment/AP1Ws4vVUU-_RiAddakivrHdPYOfPlkue8vpmmpiekOqFJHLXHw04W9ubKgF9dOzpIve1YLvgvWQbyE7TWsNppU6lPSSM6b3dlk57eUNmKJWA3Ej2NJjSZKZ3mDOO7x-3UTsLpcM6KNbGzbwNaoO69CJ16IEPq5ufOPkkdaAsJs43W3S-f--oUh3-sRkMgNeBEwhs-y-lXP89UDFTHUPcpjUL3KSq8K8Vl8IMyE1m0qa2T7qn9f8eeOsQhpigyHoUByziDmVkc9CddqCuTP4ESrvYEw6pasfl-GlmH6b4RZ2ccWh5f2CevkMAK2oFJSw5WLF3aQ=w512"
-CONFIRM_URL = "http://10.83.10.189:8000/confirmar?email="
+CONFIRM_URL = "https://web-production-53f7f.up.railway.app/confirmar?email="
 
-API_URL = "http://10.83.10.189:8000/"
+API_URL = "https://web-production-53f7f.up.railway.app/"
 
 SMTP2GO_API_KEY = "api-250A06463CE94D1B8D229463C101927A"
 REMETENTE_EMAIL = "guilherme.p.silva20@aluno.senai.br"
